@@ -36,21 +36,23 @@
 		README.md	说明文档
 		server		/服务端
 
-	./client/		客户端
-		base64.c	数据加密部分
-		base64.h	数据加密部分
+	./client:		客户端
+		base64.c	数据加密
+		base64.h	数据加密
 		c		客户端主程序
 		c.c		客户端主程序源文件
-		in.h		客户端主程序
+		in.h		客户端函数声明
 		Makefile	
 		chat.log	客户端聊天记录
 
 	./server:
 		base64.c	数据加密
 		base64.h	数据加密
-		in.h		服务器函数声明
+		in.h		服务端函数声明
 		Makefile	
 		s		服务端主程序
 		s.c		服务端主程序源文件
 		updateip.py	更新ip地址
 		user.dat	存贮用户账户资料
+
+
