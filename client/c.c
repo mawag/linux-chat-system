@@ -435,6 +435,7 @@ int gethostip(char *hostip)
 	}
 	printf("IP Address :%s\n",inet_ntoa(*((struct in_addr *)h->h_addr)));
 	strcpy(hostip,inet_ntoa(*((struct in_addr *)h->h_addr)));
+	printf("%s\n",hostip);
 	return 0;
 }
 
@@ -457,6 +458,7 @@ int c_conn_init(int flag,char *buf)
 			fgets(hostip,16,stdin);
 			hostip[strlen(hostip)-1]='\0';
 		}
+		printf("%s\n",hostip);
 	}
 	else
 	{
