@@ -115,7 +115,7 @@ int 	s_add_user(char *user,char *passwd);	//增加新用户
 int 	s_see_user(char *user,char *passwd);	//查询用户
 
 //调试
-#define DEBUG
+//#define DEBUG
 
 
 #endif

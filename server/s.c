@@ -285,7 +285,7 @@ void s_del_nm(char *user)
 //删除 by sock_fd
 void s_del_fd(int sock_fd)
 {
-	char buf[50];
+	char buf[512];
 	c_user *p = head->next;
 	c_user *q = head;
 	while (p != NULL)
@@ -400,6 +400,10 @@ int s_chat_fri(pro_pack *reavdata)
 		printf("无法找到联系人！\n");
 		reavdata->flag = 2;
 	}
+	if(strcmp(reavdata->recid,reavdata->sendid) == 0)
+	{
+		reavdata->flag = 1;
+	}
 	return flag;
 }
 
@@ -433,6 +437,7 @@ int s_chat_group(pro_pack *reavdata)
 	}
 	printf("send_end!\n");
 	reavdata->flag = 1;
+	memset(&reavdata->data,0,sizeof(reavdata->data));
 	return flag;
 }
 

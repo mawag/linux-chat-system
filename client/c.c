@@ -260,7 +260,7 @@ int c_login_do(char *user,char *passwd)
 //系统交互主界面
 int c_index_front(void)
 {
-	char inputbuf[150];
+	char inputbuf[512];
 
 	printf("\t\t系统交互主界面\n");
 	system("cat ../logo");
@@ -276,7 +276,7 @@ int c_index_front(void)
 		usleep(10000);
 		printf(" %s:",c_us.user);
 		fflush(stdout);
-		fgets(inputbuf,150,stdin);
+		fgets(inputbuf,512,stdin);
 		inputbuf[strlen(inputbuf)-1]='\0';
 		#ifdef DEBUG
 		printf("msg == %s\n",inputbuf);
@@ -289,7 +289,7 @@ int c_index_front(void)
 //用户输入解析
 int c_do_comparse(char *input)
 {
-	char buf[150];
+	char buf[512];
 	char comorfri[20];
 	int i,j;
 	#ifdef DEBUG
@@ -561,7 +561,7 @@ void c_recv_fun ( pro_pack *recv )
 	{
 		//公聊消息
 		c_print_time(0);
-		printf("\t\033[0m%15s| %s\033[0m\n",recv->sendid,recv->data);
+		printf(" \033[0m%15s| %s\033[0m\n",recv->sendid,recv->data);
 		sprintf(buf,"%s:%s",recv->sendid,recv->data);
 		s_chat_log(buf,strlen(buf));
 	}
@@ -571,11 +571,11 @@ void c_recv_fun ( pro_pack *recv )
 		if(recv->flag == 2)
 		{
 			c_print_time(0);
-			printf("\t\033[32m%15s| 无法找到联系人！\033[0m\n",recv->sendid);
+			printf(" \033[32m%15s| 无法找到联系人！\033[0m\n",recv->sendid);
 			return ;
 		}
 		c_print_time(0);
-		printf("\t\033[32m%15s| %s\033[0m\n",recv->sendid,recv->data);
+		printf(" \033[32m%15s| %s\033[0m\n",recv->sendid,recv->data);
 		sprintf(buf,"%s>>%s",recv->sendid,recv->data);
 		s_chat_log(buf,strlen(buf));
 	}
@@ -583,7 +583,7 @@ void c_recv_fun ( pro_pack *recv )
 	{
 		//系统消息
 		c_print_time(0);
-		printf("\t\033[31m%15s| %s\033[0m\n","system",recv->data);
+		printf(" \033[31m%15s| %s\033[0m\n","system",recv->data);
 		sprintf(buf,"system:%s",recv->data);
 		s_chat_log(buf,strlen(buf));
 	}
@@ -592,7 +592,7 @@ void c_recv_fun ( pro_pack *recv )
 		//好友信息或者个人信息
 		printf("\t\t\t\t___%s info___\n",recv->recid);
 		c_print_time(0);
-		printf("\t\036[36m%15s| %s\033[0m\n","system",recv->data);
+		printf(" \036[36m%15s| %s\033[0m\n","system",recv->data);
 	}
 	else if(recv->opcode == C_FRIEND_ADD)
 	{
@@ -601,11 +601,11 @@ void c_recv_fun ( pro_pack *recv )
 		c_print_time(0);
 		if(recv->flag == 0)
 		{
-			printf("\t\033[36m%15s| %s\033[0m\n","system","添加好友成功!\n");
+			printf(" \033[36m%15s| %s\033[0m\n","system","添加好友成功!\n");
 		}
 		else
 		{
-			printf("\t\033[36m%15s| %s\033[0m\n","system","添加好友失败!\n");
+			printf(" \033[36m%15s| %s\033[0m\n","system","添加好友失败!\n");
 		}
 	}
 	else if(recv->opcode == C_FRIEND_DEL)
@@ -614,18 +614,18 @@ void c_recv_fun ( pro_pack *recv )
 		c_print_time(0);
 		if(recv->flag == 0)
 		{
-			printf("\t\033[36m%15s| %s\033[0m\n","system","删除好友成功!\n");
+			printf(" \033[36m%15s| %s\033[0m\n","system","删除好友成功!\n");
 		}
 		else	
 		{
-			printf("\t\033[36m%15s| %s\033[0m\n","system","删除好友失败!\n");
+			printf(" \033[36m%15s| %s\033[0m\n","system","删除好友失败!\n");
 		}
 	}
 	else if(recv->opcode == C_ONLINE)
 	{
 		//在线列表
 		c_print_time(0);
-		printf("\t\033[0m%15s| %s\n","system",recv->data);
+		printf(" \033[0m%15s| %s\n","system",recv->data);
 	}
 }
 
