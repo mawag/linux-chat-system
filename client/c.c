@@ -374,6 +374,7 @@ int c_index_front(void)
 	char inputbuf[150];
 
 	printf("\t\t系统交互主界面\n");
+	system("cat ../logo");
 	printf("\t\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	c_print_time(1);
 	printf("\t\t系统支持以下命令:\n");
