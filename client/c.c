@@ -90,8 +90,9 @@ int c_online_list ( void )
 //主页窗体
 int c_main_front(void)
 {
-	printf("主页面前端模块\n");
-	printf("1,登陆 2，注册 3，退出\n");
+	printf("\t\t主页面前端模块\n\t\t");
+	c_print_time(1);
+	printf("\n\t\t1,登陆 2，注册 3，退出\n");
 	return 0;
 }
 //主页窗体处理
@@ -127,7 +128,7 @@ int c_main_do(void)
 //注册前端
 int c_reg_front(void)
 {
-	printf("注册前端\n");
+	printf("\t\t注册前端\n");
 	char user[USER_LEN];
 	char fpasswd[PASSWD_LEN];
 	char spasswd[PASSWD_LEN];
@@ -135,28 +136,26 @@ int c_reg_front(void)
 	
 	do
 	{
-		printf("用户名:");
+		printf("\t\t用户名:");
 		fflush(stdout);
 		fgets(user,USER_LEN,stdin);
 		user[strlen(user)-1]='\0';
 		if(strcmp(user,"\0") != 0)
 			break;
-		printf("账户名不能为空!\n");
+		printf("\t\t账户名不能为空!\n");
 	}while(1);
 	do
 	{
-		strncpy(fpasswd,getpass("请输入新密码:"),PASSWD_LEN);
-		//getchar();
-		strncpy(spasswd,getpass("请在次输入新密码:"),PASSWD_LEN);
-		//getchar();
+		strncpy(fpasswd,getpass("\t\t请输入新密码:"),PASSWD_LEN);
+		strncpy(spasswd,getpass("\t\t请在次输入新密码:"),PASSWD_LEN);
 		if(strcmp(fpasswd,spasswd) == 0)
 			break;
-		printf("您两次输入的密码不一致，请重新输入!\n");
+		printf("\t\t您两次输入的密码不一致，请重新输入!\n");
 	}while(1);
 	#ifdef DEBUG
 	printf("user:%s--passwd1:%s--passwd2:%s\n",user,fpasswd,spasswd);
 	#endif
-	printf("正在申请账户\n");
+	printf("\t\t正在申请账户");
 	sleep(1);
 	printf(".");
 	fflush(stdout);
@@ -167,10 +166,10 @@ int c_reg_front(void)
 	printf(".\n");
 	if(c_reg_do(user,fpasswd) == 0)
 	{
-		printf("注册成功！\n");
+		printf("\t\t注册成功！\n");
 		return 0;
 	}
-	printf("注册失败！\n");
+	printf("\t\t注册失败！\n");
 	return 1;
 }
 
@@ -205,13 +204,13 @@ int c_login_front(void)
 	char choose;
 	int i;
 	
-	printf("登陆前端\n");
+	printf("\t\t登陆前端\n");
 	for(i=0;i<3;i++)
 	{
-		printf("user:");
+		printf("\t\t用户名:");
 		fgets(user,USER_LEN,stdin);
 		user[strlen(user)-1]='\0';
-		strncpy(passwd,getpass("passwd:"),PASSWD_LEN);
+		strncpy(passwd,getpass("\t\t密码:"),PASSWD_LEN);
 		#ifdef DEBUG
 		printf("user:%s,passwd:%s\n",user,passwd);
 		#endif
@@ -219,11 +218,11 @@ int c_login_front(void)
 			return 0;
 		else
 		{
-			printf("密码错误，请重试\n");
+			printf("\t\t密码错误，请重试\n");
 		}
 		
 	}
-	printf("密码次数超过3次，很抱歉！\n");
+	printf("\t\t密码次数超过3次，很抱歉！\n");
 	c_conn_disconn();
 	exit(0);
 }
@@ -355,7 +354,7 @@ int c_do_comparse(char *input)
 	return 0;
 }
 
-//发送群聊消息
+//发送公聊消息
 void c_send_allmag(char *buf,int buf_len)
 {
 	pro_pack c_temp;
@@ -554,7 +553,9 @@ pro_pack *c_conn_recv(void *tmp)
 void c_recv_fun ( pro_pack *recv )
 {
 	char buf[120];
-	if(recv->opcode == C_CHAT_GROUP)
+	if(recv->flag == 1)
+		return ;
+	else if(recv->opcode == C_CHAT_GROUP)
 	{
 		//公聊消息
 		c_print_time(0);
@@ -565,6 +566,12 @@ void c_recv_fun ( pro_pack *recv )
 	else if (recv->opcode == C_CHAT_FRI)
 	{
 		//私聊消息
+		if(recv->flag == 2)
+		{
+			c_print_time(0);
+			printf("\t\033[32m%15s| 无法找到联系人！\033[0m\n",recv->sendid);
+			return ;
+		}
 		c_print_time(0);
 		printf("\t\033[32m%15s| %s\033[0m\n",recv->sendid,recv->data);
 		sprintf(buf,"%s>>%s",recv->sendid,recv->data);

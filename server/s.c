@@ -372,6 +372,7 @@ int s_chat_fri(pro_pack *reavdata)
 	printf("chat: (%s_to_%s) msaaage:%s\n",reavdata->sendid,reavdata->recid,reavdata->data);
 	c_user *p = head->next;
 	int flag = 1;
+	reavdata->flag = 0;
 
 	while(p != NULL)
 	{
@@ -379,14 +380,26 @@ int s_chat_fri(pro_pack *reavdata)
 		{
 			reavdata->flag = 0;
 			flag = 0;
-			if(send(p->sock_fd,&reavdata,sizeof(pro_pack), 0)<0)
+			#ifdef DEBUG
+			printf("_________send___________\n");
+			printf("type:%d\n",reavdata->opcode);
+			printf("from:%s\n",reavdata->sendid);
+			printf("to:%s\n",reavdata->recid);
+			printf("verify=%d, flag=%d\n",reavdata->verify,reavdata->flag);
+			printf("date:%s\n",reavdata->data);
+			printf("________________________\n");
+			#endif
+			if(send(p->sock_fd,reavdata,sizeof(pro_pack), 0)<0)
 				perror("send");
 		}
 		p = p->next;
 	}
 	printf("send_end!\n");
 	if(flag == 1)
+	{
 		printf("无法找到联系人！\n");
+		reavdata->flag = 2;
+	}
 	return flag;
 }
 
@@ -396,10 +409,20 @@ int s_chat_group(pro_pack *reavdata)
 	int flag = 1;
 	printf("send_char_from %s,massage:%s\n",reavdata->sendid,reavdata->data);
 	c_user *p = head->next;
+	reavdata->flag = 0;
 	
 	while(p != NULL)
 	{
-		if(send(p->sock_fd,&reavdata,sizeof(pro_pack),0)==-1)
+		#ifdef DEBUG
+		printf("_________send___________\n");
+		printf("type:%d\n",reavdata->opcode);
+		printf("from:%s\n",reavdata->sendid);
+		printf("to:%s\n",reavdata->recid);
+		printf("verify=%d, flag=%d\n",reavdata->verify,reavdata->flag);
+		printf("date:%s\n",reavdata->data);
+		printf("________________________\n");
+		#endif
+		if(send(p->sock_fd,reavdata,sizeof(pro_pack),0)==-1)
 		{
 			perror("send");
 			printf("error_%s信息发送失败!(sock_fd = %d)\n",p->user,p->sock_fd);
@@ -409,7 +432,7 @@ int s_chat_group(pro_pack *reavdata)
 		p = p->next;
 	}
 	printf("send_end!\n");
-	
+	reavdata->flag = 1;
 	return flag;
 }
 

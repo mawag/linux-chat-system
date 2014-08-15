@@ -93,8 +93,6 @@ typedef struct c_loginuser
 //全局变量
 c_user c_us;
 
-//调试
-#define DEBUG
 
 int c_encode(char *buf);			//消息加密
 int c_decode(char *buf);			//消息解密
@@ -121,4 +119,9 @@ void c_send_mag(char *recid,char *buf,int buf_len);//发送聊天消息
 void c_logout(void);				//注销
 void c_recv_fun(pro_pack *recv);		//接收包处理
 void c_help(void);				//帮助
+
+
+//调试
+//#define DEBUG
+
 # endif
