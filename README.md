@@ -23,7 +23,7 @@
 
 ###开发环境：
 	*开发语言：	C语言
-	*编译器：	gcc version 4.8.2 (Ubuntu 4.8.2-19ubuntu1) 
+	*编译器  ：	gcc version 4.8.2 (Ubuntu 4.8.2-19ubuntu1) 
 	*操作系统：	Ubuntu 14.04.1 LTS
 
 
