@@ -24,7 +24,7 @@
 ###开发环境：
 
 	*开发语言：	C语言
-	*编译器  ：	gcc version 4.8.2 (Ubuntu 4.8.2-19ubuntu1) 
+	*编译器  ：	   gcc version 4.8.2 (Ubuntu 4.8.2-19ubuntu1) 
 	*操作系统：	Ubuntu 14.04.1 LTS
 
 ###文件说明:
@@ -39,8 +39,8 @@
 	./client:		客户端
 		base64.c	数据加密
 		base64.h	数据加密
-		c		客户端主程序
-		c.c		客户端主程序源文件
+		c			客户端主程序
+		c.c			客户端主程序源文件
 		in.h		客户端函数声明
 		Makefile	
 		chat.log	客户端聊天记录
@@ -50,8 +50,8 @@
 		base64.h	数据加密
 		in.h		服务端函数声明
 		Makefile	
-		s		服务端主程序
-		s.c		服务端主程序源文件
+		s			服务端主程序
+		s.c			服务端主程序源文件
 		updateip.py	更新ip地址
 		user.dat	存贮用户账户资料
 
