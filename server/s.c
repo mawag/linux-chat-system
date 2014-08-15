@@ -7,209 +7,105 @@
 #   >>   Github: github.com/mawag
 #   >> 程序版本: 0.0.1
 #   >> 创建时间: 2014-08-01 10:27:13
-#   >> 修改时间: 2014-08-02 17:29:37
+#   >> 修改时间: 2014-08-15 10:36:27
 #  Copyright (c) wangbo  All rights reserved.
 =============================================================================*/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/socket.h>
-#include <sys/wait.h>
-#include <sys/epoll.h>
-#include <pthread.h>
-#include <linux/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-#include <time.h>
-#include <netdb.h>
-#include <syslog.h>
-//#include <mysql.h>
-#include "base64.h"
-#pragma pack(1)
 
-#define C_LOGIN		100
-#define C_LOGOUT		101
-#define C_REG			200
-#define C_GROUP_GET		300
-#define C_GROUP_JOIN		301
-#define C_GROUP_QUIT		302
-#define C_GROUP_CREATE	303
-#define C_FRIEND_GET		400
-#define C_FRIEND_ADD		401
-#define C_FRIEND_DEL		402
-#define C_GETINFO_ME		500
-#define C_GETINFO_FRI		501
-#define C_GETINFO_GROUP 	502
-#define C_ONLINE		503
-#define S_MASSWGE		600
-#define C_CHAT_FRI 		601
-#define C_CHAT_GROUP 	602
+#include "in.h"
 
-//设置服务器ip和端口
-#define SERVER_IP 		"127.0.0.1"
-#define SERVER_WEB 		"localhost"
-#define SERVER_PORT 		8888
-
-//设置mysql服务器ip端口账户密码
-//#define MYSQL_HOST 	"localhost"
-//#define MYSQL_USER 	"root" 
-//#define MYSQL_PASSWD 	""
-//#define MYSQL_DATABASE ""
-
-#define MAX_ONLINE_LEN 	50	//在线人数限制
-#define MAX_DATA_LEN 	512	//data长度限制
-#define USER_LEN 	15	//用户名长度限制
-#define PASSWD_LEN 	15	//密码长度限制
-
-//网络传输协议部分
-typedef struct protocol_packet
+//主函数
+int main(int argc,char **argv)
 {
-	int	opcode;		//操作码
-	int	verify;			//校验位
-	int	flag;			//返回位
-	char	sendid[USER_LEN];	//发件id
-	char	recid[USER_LEN];	//收件id
-	char	data[MAX_DATA_LEN];	//数据
-}pro_pack;
-
-//时间日期
-typedef struct s_timedate
-{
-	int yy;//年
-	int mm;//月
-	int dd;//日
-	int hh;//时
-	int mi;//分
-	int ss;//秒
-}now_time;
-
-//在线账户处理信息
-typedef struct c_loginuser
-{
-	char	user[USER_LEN];	//已登录用户id
-	int	sock_fd;		//建立好连接的套接字
-	struct c_loginuser *next;	//单链表
-}c_user;
-
-//在线用户全局变量
-int 	c_us_online = 0;
-c_user *head;
-
-c_user 	*s_create_l(void);			//建立链表
-void 	s_ins_l(char* user, int sock_fd);	//插入
-void 	s_del_nm(char* user );			//删除
-void 	s_del_fd(int sock_fd);			//删除根据sock_fd
-int 	s_login(pro_pack* reavdata);		//登陆
-int 	s_reg(pro_pack *reavdata);		//注册
-int	s_logout(pro_pack* reavdata);		//注销
-int 	s_chat_fri(pro_pack *reavdata);		//私聊
-int 	s_chat_group(pro_pack *reavdata);	//公聊
-void 	s_online(pro_pack* reavdata);		//在线
-void 	s_msg(char* massage);			//系统通告
-void 	s_stidy(pro_pack* reavdata);		//系统包处理
-int 	s_comparse(pro_pack *reavdata);		//解析包内容
-void 	fun(int *client_fd);			//收包发包
-int 	s_add_user(char *user,char *passwd);	//增加新用户
-int 	s_see_user(char *user,char *passwd);	//查询用户
-
-//调试
-#define DEBUG
-
-//int s_mysql_add(char *user,char *passwd)//增加新用户
-//{
-//	MYSQL conn;
-//	int res;
-//	char sql[120]="insert into clients values('";
-//	strcat(sql,user);
-//	strcat(sql,"','");
-//	strcat(sql,passwd);
-//	strcat(sql,"');");
-//	#ifdef DEBUG
-//	printf("sql = %s\n",sql);
-//	#endif
-//	mysql_init(&conn);
-//
-//	if(mysql_real_connect(&conn,MYSQL_HOST,MYSQL_USER,MYSQL_PASSWD,MYSQL_DATABASE,0,NULL,CLIENT_FOUND_ROWS))
-//	{
-//		printf("connect success!\n");
-//		res=mysql_query(&conn,sql);
-//		if(res)
-//		{
-//			printf("add user failed!\n");
-//			return -1;
-//		}
-//		else
-//		{
-//			printf("add user success!\n");
-//			return 0;
-//		}
-//	}
-//	else
-//	{
-//		printf("connect failed!\n");
-//		exit(-1);
-//	}
-//	return -1;
-//}
-//
-//int s_mysql_see(char *user,char *passwd)//查询用户
-//{
-//	MYSQL conn;
-//	MYSQL_RES *res_ptr;
-//	int res;
-//	int row;
-//	char sql[256]={0};
-//	strcpy(sql,"select * from clients where username=\"");
-//	strcat(sql,user);
-//	strcat(sql,"\" and password=\"");
-//	strcat(sql,passwd);
-//	strcat(sql,"\";");
-//	printf("查询的sql:%s\n",sql);
-//	
-//	mysql_init(&conn);
-//	if(mysql_real_connect(&conn,MYSQL_HOST,MYSQL_USER,MYSQL_PASSWD,MYSQL_DATABASE,0,NULL,CLIENT_FOUND_ROWS))
-//	{
-//		res=mysql_query(&conn,sql);
-//		if(res)
-//		{
-//			perror("Select SQL Error!\n");
-//			exit(-1);
-//		}
-//		else
-//		{
-//			res_ptr=mysql_store_result(&conn);
-//			if(res_ptr)
-//			{
-//				row=mysql_num_rows(res_ptr);
-//				if(row==0)
-//				{
-//					mysql_close(&conn);
-//					return 1;
-//				}
-//				mysql_close(&conn);
-//				return 0;//0表示验证成功
-//			}
-//			else
-//			{
-//				mysql_close(&conn);
-//				return 1;//1表示验证失败
-//			}
-//		}
-//	}
-//	else
-//	{
-//		perror("Database Connect Failed!");
-//		exit(-1);
-//	}
-//	mysql_close(&conn);
-//	return 1;
-//}
+	struct sockaddr_in client_addr;
+	int sock_fd;//套接字
+	int client_len;
+	int client_fd;
+	pthread_t thid;
+	
+	system("python ./updateip.py");
+	
+	head = s_create_l();
+	openlog(argv[0],LOG_CONS|LOG_PID,LOG_USER);
+	//清空数据
+	memset(&client_addr,0,sizeof(struct sockaddr_in));
+	//设置ip类型为ipv4
+	client_addr.sin_family = AF_INET;
+	//接受所有ip
+	client_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	//端口
+	client_addr.sin_port = htons (SERVER_PORT);
+	//填充0
+	memset(client_addr.sin_zero,0,sizeof(client_addr.sin_zero));
+	
+	//创建套接字
+	//IPV4,TCP连接
+	sock_fd = socket(AF_INET,SOCK_STREAM,0);
+	if(sock_fd == -1)
+	{
+		syslog(LOG_ERR,"create sock_fd failed. sock_fd:%d\nerror:%s\n",sock_fd,strerror(errno));
+		perror("socket");
+		exit(1);
+	}
+	syslog(LOG_INFO,"create sock_fd success.sock_fd:%d\n",sock_fd);
+	
+	int s_conn_opt = 1;
+	socklen_t len=sizeof(s_conn_opt);
+	if((setsockopt(sock_fd,SOL_SOCKET,SO_REUSEADDR,&s_conn_opt,(socklen_t)sizeof(s_conn_opt)))==-1)
+	{
+		syslog(LOG_ERR,"set sock_fd failed.sock_fd:%d\nerror:%s\n",sock_fd,strerror(errno));
+		perror("SO_REUSEADDR\n");
+	}
+	syslog(LOG_INFO,"set sock_fd success.sock_fd:%d\n",sock_fd);
+	//绑定
+	if(bind(sock_fd,(struct sockaddr *)&client_addr,sizeof(struct sockaddr_in)) == -1)
+	{
+		syslog(LOG_ERR,"bing port failed. sock_fd:%d\nerror:%s\n",sock_fd,strerror(errno));
+		perror("bind");
+		exit(1);
+	}
+	syslog(LOG_INFO,"bing port success.sock_fd:%d\n",sock_fd);
+	//监听
+	if(listen(sock_fd,MAX_ONLINE_LEN) == -1)
+	{
+		syslog(LOG_ERR,"listen port failed .sock_fd:%d\nerror:%s\n",sock_fd,strerror(errno));
+		perror("listen");
+		exit(1);
+	}
+	syslog(LOG_INFO,"listen port success.sock_fd:%d\n",sock_fd);
+	
+	printf("服务端启动成功，正在监听系统端口:%d\n",SERVER_PORT);
+	
+	//接受连接，阻塞方式
+	while(1)
+	{
+		client_len = sizeof(struct sockaddr_in);
+		client_fd = accept(sock_fd,(struct sockaddr *)&client_addr,(socklen_t *)&client_len);
+		if(client_fd < 0)
+		{
+			syslog(LOG_ERR,"accept error.from ip :%s, sock_fd is %d\nerror:%s\n",inet_ntoa(client_addr.sin_addr),client_fd,strerror(errno));
+			perror("accept");
+			exit(1);
+		}
+		syslog(LOG_INFO,"accept a client conn.from ip :%s, sock_fd is %d\n",inet_ntoa(client_addr.sin_addr),client_fd);
+		printf("receive a new client,ip:%s\n",inet_ntoa(client_addr.sin_addr));
+		if(pthread_create(&thid,NULL,(void *)fun,&client_fd) != 0)
+		{
+			syslog(LOG_ERR,"create thread failed .\nerror:%s\n",strerror(errno));
+			perror("pthread_create");
+			exit(1);
+		}
+		
+		
+	}
+	if(close(sock_fd) == -1)
+	{
+		syslog(LOG_ERR,"close sock_fd failed .\nerror:%s\n",strerror(errno));
+		perror("pthread_create");
+		exit(1);
+	}
+	syslog( LOG_WARNING,"close sock_fd .\nerror:%s\n",strerror(errno));
+	return 0;
+}
 
 //增加新用户
 int s_add_user(char *user,char *passwd)
@@ -646,6 +542,7 @@ int s_comparse(pro_pack *reavdata)
 	return 0;
 }
 
+//单线程处理用户数据
 void fun(int* client_fd)
 {
 	pro_pack recv_data;
@@ -722,96 +619,4 @@ void fun(int* client_fd)
 	return ;
 }
 
-int main(int argc,char **argv)
-{
-	struct sockaddr_in client_addr;
-	int sock_fd;//套接字
-	int client_len;
-	int client_fd;
-	pthread_t thid;
-
-	system("python ./updateip.py");
-	
-	head = s_create_l();
-	openlog(argv[0],LOG_CONS|LOG_PID,LOG_USER);
-	//清空数据
-	memset(&client_addr,0,sizeof(struct sockaddr_in));
-	//设置ip类型为ipv4
-	client_addr.sin_family = AF_INET;
-	//接受所有ip
-	client_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	//端口
-	client_addr.sin_port = htons (SERVER_PORT);
-	//填充0
-	memset(client_addr.sin_zero,0,sizeof(client_addr.sin_zero));
-
-	//创建套接字
-	//IPV4,TCP连接
-	sock_fd = socket(AF_INET,SOCK_STREAM,0);
-	if(sock_fd == -1)
-	{
-		syslog(LOG_ERR,"create sock_fd failed. sock_fd:%d\nerror:%s\n",sock_fd,strerror(errno));
-		perror("socket");
-		exit(1);
-	}
-	syslog(LOG_INFO,"create sock_fd success.sock_fd:%d\n",sock_fd);
-
-	int s_conn_opt = 1;
-	socklen_t len=sizeof(s_conn_opt);
-	if((setsockopt(sock_fd,SOL_SOCKET,SO_REUSEADDR,&s_conn_opt,(socklen_t)sizeof(s_conn_opt)))==-1)
-	{
-		syslog(LOG_ERR,"set sock_fd failed.sock_fd:%d\nerror:%s\n",sock_fd,strerror(errno));
-		perror("SO_REUSEADDR\n");
-	}
-	syslog(LOG_INFO,"set sock_fd success.sock_fd:%d\n",sock_fd);
-	//绑定
-	if(bind(sock_fd,(struct sockaddr *)&client_addr,sizeof(struct sockaddr_in)) == -1)
-	{
-		syslog(LOG_ERR,"bing port failed. sock_fd:%d\nerror:%s\n",sock_fd,strerror(errno));
-		perror("bind");
-		exit(1);
-	}
-	syslog(LOG_INFO,"bing port success.sock_fd:%d\n",sock_fd);
-	//监听
-	if(listen(sock_fd,MAX_ONLINE_LEN) == -1)
-	{
-		syslog(LOG_ERR,"listen port failed .sock_fd:%d\nerror:%s\n",sock_fd,strerror(errno));
-		perror("listen");
-		exit(1);
-	}
-	syslog(LOG_INFO,"listen port success.sock_fd:%d\n",sock_fd);
-
-	printf("服务端启动成功，正在监听系统端口:%d\n",SERVER_PORT);
-
-	//接受连接，阻塞方式
-	while(1)
-	{
-		client_len = sizeof(struct sockaddr_in);
-		client_fd = accept(sock_fd,(struct sockaddr *)&client_addr,(socklen_t *)&client_len);
-		if(client_fd < 0)
-		{
-			syslog(LOG_ERR,"accept error.from ip :%s, sock_fd is %d\nerror:%s\n",inet_ntoa(client_addr.sin_addr),client_fd,strerror(errno));
-			perror("accept");
-			exit(1);
-		}
-		syslog(LOG_INFO,"accept a client conn.from ip :%s, sock_fd is %d\n",inet_ntoa(client_addr.sin_addr),client_fd);
-		printf("receive a new client,ip:%s\n",inet_ntoa(client_addr.sin_addr));
-		if(pthread_create(&thid,NULL,(void *)fun,&client_fd) != 0)
-		{
-			syslog(LOG_ERR,"create thread failed .\nerror:%s\n",strerror(errno));
-			perror("pthread_create");
-			exit(1);
-		}
-		
-
-	}
-	if(close(sock_fd) == -1)
-	{
-		syslog(LOG_ERR,"close sock_fd failed .\nerror:%s\n",strerror(errno));
-		perror("pthread_create");
-		exit(1);
-	}
-	syslog( LOG_WARNING,"close sock_fd .\nerror:%s\n",strerror(errno));
-	return 0;
-}
 
