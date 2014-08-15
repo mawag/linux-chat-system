@@ -10,8 +10,8 @@
 #   >> 修改时间: 2014-08-15 10:35:54
 #  Copyright (c) wangbo  All rights reserved.
 =============================================================================*/
-#ifndef __C_IN.H_____
-#define __C_IN.H_____
+#ifndef __C_IN_H_____
+#define __C_IN_H_____
 
 #include <stdio.h>
 #include <stdlib.h>

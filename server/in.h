@@ -10,8 +10,8 @@
 #   >> 修改时间: 2014-08-15 10:36:41
 #  Copyright (c) wangbo  All rights reserved.
 =============================================================================*/
-#ifndef __S_IN.H_____
-#define __S_IN.H_____
+#ifndef __S_IN_H_____
+#define __S_IN_H_____
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,7 +31,6 @@
 #include <time.h>
 #include <netdb.h>
 #include <syslog.h>
-//#include <mysql.h>
 #include "base64.h"
 #pragma pack(1)
 
