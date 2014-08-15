@@ -126,16 +126,14 @@ int s_chat_log(char* buf, int buf_len)
 	now_time nowtime;
 	int fd;
 	int flag = 0;
-	char date[50];
-	char filename[50];
-	strncpy(filename,c_us.user,USER_LEN);
-	strcat(filename,"_chat.log");
-	if((fd = open(filename,O_WRONLY|O_CREAT|O_APPEND,600)) == -1)
+	char date[10];
+	if((fd = open("chat.log",O_WRONLY|O_CREAT|O_APPEND,436)) == -1)
 	{
 		perror("open");
 	}
 	s_gettime(&nowtime);
 	sprintf(date,"%02d:%02d:%02d: ",nowtime.hh,nowtime.mi,nowtime.ss);
+
 	if(write(fd,date,sizeof(date)) < 0)
 	{
 		perror("write");
@@ -361,7 +359,7 @@ int c_login_do(char *user,char *passwd)
 	if(flag == 0)
 	{
 		strncpy(c_us.user,c_login_data.sendid,USER_LEN);
-		sprintf(buf,"%s login success!\n",c_us.user);
+		sprintf(buf,"~~~~~~~~~~~~logon~~~~~~~~~~~~\n%s login success!",c_us.user);
 		s_chat_log(buf,strlen(buf));
 		return 0;
 	}
@@ -379,7 +377,7 @@ int c_index_front(void)
 	c_print_time(1);
 	printf("\t\t系统支持以下命令:\n");
 	printf("\t\t私聊，格式为\"@name massage\"，公聊，直接发送消息即可\n");
-	printf("\t\t加好友/add，删除好友/del，查看在线好友/list，注销/logout，退出/exit,帮助/help\n");
+	printf("\t\t查看在线用户/list，注销/logout，退出/exit,帮助/help\n");
 	printf("\t\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	while(1)
 	{
@@ -642,7 +640,7 @@ pro_pack *c_conn_recv(void *tmp)
 				if(c_recv_data.opcode == C_LOGOUT)
 				{
 					//服务器要求退出
-					printf("您已经被踢下线!\n");
+					printf("您已经下线!\n");
 					exit(0);
 				}
 				*(int *)tmp = c_recv_data.flag;
@@ -669,15 +667,15 @@ void c_recv_fun ( pro_pack *recv )
 		//公聊消息
 		c_print_time(0);
 		printf("\t\033[0m%15s| %s\033[0m\n",recv->sendid,recv->data);
-		sprintf(buf,"group: %s\n",recv->data);
+		sprintf(buf,"%s:%s",recv->sendid,recv->data);
 		s_chat_log(buf,strlen(buf));
 	}
 	else if (recv->opcode == C_CHAT_FRI)
 	{
 		//私聊消息
 		c_print_time(0);
-		printf("\t\033[32m%15s| @%s %s\033[0m\n",recv->sendid,c_us.user,recv->data);
-		sprintf(buf,"%s:%s\n",recv->sendid,recv->data);
+		printf("\t\033[32m%15s| %s\033[0m\n",recv->sendid,recv->data);
+		sprintf(buf,"%s>>%s",recv->sendid,recv->data);
 		s_chat_log(buf,strlen(buf));
 	}
 	else if(recv->opcode == S_MASSWGE)
@@ -685,7 +683,7 @@ void c_recv_fun ( pro_pack *recv )
 		//系统消息
 		c_print_time(0);
 		printf("\t\033[31m%15s| %s\033[0m\n","system",recv->data);
-		sprintf(buf,"system:%s\n",recv->data);
+		sprintf(buf,"system:%s",recv->data);
 		s_chat_log(buf,strlen(buf));
 	}
 	else if((recv->opcode == C_GETINFO_FRI) || (recv->opcode == C_GETINFO_ME))
@@ -797,12 +795,12 @@ void c_logout(void)
 void c_help ( void )
 {
 	printf("\t\t******************************>>>   help    <<<******************************\n");
-	printf("\t\t 基于c/s架构的linux聊天工具 帮助文档\n");
-	printf("\t\t 版本: 0.0.1\t");
+	printf("\t\t Based on c / s architecture linux chat system\n\t\t基于c/s架构的linux聊天工具\n");
+	printf("\t\t 版本: 0.1\t");
 	printf("\t\t 已经实现的功能:\n");
 	printf("\t\t 私聊，格式为\"@name massage\"，公聊，直接发送消息即可\n");
 	printf("\t\t 查看在线好友/list，注销/logout，退出/exit,帮助/help\n");
-	printf("\t\t******************************************************************************");
+	printf("\t\t******************************************************************************\n");
 }
 
 

@@ -57,15 +57,15 @@
 #define SERVER_PORT 		8888
 
 //设置mysql服务器ip端口账户密码
-//#define MYSQL_HOST 		"116.255.151.16"
-//#define MYSQL_USER 		"idinablog_f" 
-//#define MYSQL_PASSWD 	"wbgh1016!"
-//#define MYSQL_DATABASE 	"idinablog"
+//#define MYSQL_HOST 	"localhost"
+//#define MYSQL_USER 	"root" 
+//#define MYSQL_PASSWD 	""
+//#define MYSQL_DATABASE ""
 
 #define MAX_ONLINE_LEN 	50	//在线人数限制
 #define MAX_DATA_LEN 	512	//data长度限制
-#define USER_LEN 		15	//用户名长度限制
-#define PASSWD_LEN 		15	//密码长度限制
+#define USER_LEN 	15	//用户名长度限制
+#define PASSWD_LEN 	15	//密码长度限制
 
 //网络传输协议部分
 typedef struct protocol_packet
